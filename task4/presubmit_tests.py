@@ -210,28 +210,6 @@ def test_proximal_gm_prototype():
     method(oracle, x_0, 1, 1e-5, 100, True, True)
 
 
-def test_proximal_fast_gm_prototype():
-    method = optimization.proximal_fast_gradient_method
-
-    A = np.array([[1.0, 2.0], [3.0, 4.0]])
-    b = np.array([1.0, 2.0])
-    oracle = oracles.create_lasso_prox_oracle(A, b, regcoef=2.0)
-    x_0 = np.array([-3.0, 0.0])
-
-    method(oracle, x_0)
-    method(oracle, x_0, L_0=1)
-    check_prototype_results(method(oracle, x_0, tolerance=1e10),
-                            [None, 'success', None])
-    check_prototype_results(method(oracle, x_0, tolerance=1e10, trace=True),
-                            [None, 'success', [0.0]])
-    check_prototype_results(method(oracle, x_0, max_iter=1),
-                            [None, 'iterations_exceeded', None])
-    check_prototype_results(method(oracle, x_0, max_iter=1, trace=True),
-                            [None, 'iterations_exceeded', [0.0, 0.0]])
-    method(oracle, x_0, display=True)
-    method(oracle, x_0, 1, 1e-5, 100, True, True)
-
-
 def test_proximal_gm_one_step():
     # Simple smooth quadratic task.
     A = np.eye(2)
@@ -257,52 +235,6 @@ def test_proximal_gm_nonsmooth():
     eq_(status, 'success')
     ok_(np.allclose(x_star, np.array([0.0, 0.0])))
     ok_(np.allclose(np.array(hist['func']), np.array([3.0, 1.0, 0.0])))
-
-
-def proximal_fast_gm_one_step():
-    # Simple smooth quadratic task.
-    A = np.eye(2)
-    b = np.array([1.0, 0.0])
-    oracle = oracles.create_lasso_prox_oracle(A, b, regcoef=0.0)
-    x_0 = np.zeros(2)
-
-    x_star, status, hist = optimization.proximal_fast_gradient_method(
-                                oracle, x_0, trace=True)
-    eq_(status, 'success')
-    ok_(np.allclose(x_star, np.array([1.0, 0.0])))
-    ok_(np.allclose(np.array(hist['func']), np.array([0.5, 0.0])))
-
-
-def test_proximal_fast_gm_nonsmooth():
-    # Minimize ||x||_1.
-    oracle = oracles.create_lasso_prox_oracle(np.zeros([2, 2]),
-                                              np.zeros(2),
-                                              regcoef=1.0)
-    x_0 = np.array([2.0, -1.0])
-    x_star, status, hist = optimization.proximal_fast_gradient_method(
-                                oracle, x_0, trace=True)
-    eq_(status, 'success')
-    ok_(np.allclose(x_star, np.array([7.64497775e-06, 0.0])))
-    ok_(np.allclose(np.array(hist['func']), np.array([
-        [3.0, 1.0, 0.2679491924311227,
-         0.099179721203666166, 0.041815858679730096, 0.018850854415891891,
-         0.0088302704548977509, 0.0042337678350286671, 0.0020598280587097542,
-         0.0010116006643634953, 0.00049984569823222113, 0.00024797029202045391,
-         0.00012334133663333596, 6.1457610088328345e-05, 3.0658125993932962e-05,
-         1.5305578515886715e-05, 7.6449777454652732e-06]
-        ])))
-
-
-def test_proximal_fast_gm_nonsmooth2():
-    oracle = oracles.create_lasso_prox_oracle(np.array([[1, 2, 3], [4, 5, 6]]),
-                                              np.array([1, 4]),
-                                              regcoef=1.0)
-    x_0 = np.array([1, 1, -1])
-    x_star, status, hist = optimization.proximal_fast_gradient_method(
-                                oracle, x_0, trace=True, max_iter=3)
-    eq_(status, 'iterations_exceeded')
-    ok_(np.allclose(x_star, np.array([[1.01714486, 1.04658812, -0.85594606]])))
-    ok_(np.allclose(np.array(hist['func']), np.array([4.0, 3.219970703125, 3.0946475565433502, 3.0380920410969945])))
 
 
 def check_equal_histories(test_history, reference_history, atol=1e-3):
